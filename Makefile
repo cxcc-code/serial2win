@@ -11,6 +11,8 @@ LDFLAGS += $(DEBUG)
 
 OBJS += src/main.o
 OBJS += src/prase_args.o
+OBJS += src/serial.o
+OBJS += src/tty_key_map.o
 
 serial2win:$(OBJS)
 	$(CC) $^ $(LDFLAGS) -o $@
