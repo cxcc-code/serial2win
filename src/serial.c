@@ -50,7 +50,7 @@ HANDLE serial_open(
     timeouts.ReadIntervalTimeout = 50;
     timeouts.ReadTotalTimeoutConstant = 50;
     timeouts.ReadTotalTimeoutMultiplier = 10;
-    timeouts.WriteTotalTimeoutConstant = 50;
+    timeouts.WriteTotalTimeoutConstant = 5;
     timeouts.WriteTotalTimeoutMultiplier = 10;
     if (!SetCommTimeouts(hSerial, &timeouts)) {
         printf("Error: Unable to set serial port timeouts\n");
@@ -78,10 +78,8 @@ size_t serial_write(HANDLE hSerial,const void* data, size_t dataSize)
 size_t serial_read(HANDLE hSerial, void* buffer,size_t bufferSize)
 {
     DWORD bytesRead;
-    if (!ReadFile(hSerial, buffer, bufferSize, &bytesRead, NULL)) {
-        printf("Error: Unable to read from serial port\n");
-        return -1;
-    }
+    if (!ReadFile(hSerial, buffer, bufferSize, &bytesRead, NULL))
+        return 0;
     return bytesRead;
 }
 

@@ -44,7 +44,7 @@ size_t serial_write(HANDLE hSerial,const void* data, size_t dataSize);
  * @param buffer:缓冲区指针
  * @param bufferSize:缓冲区大小
  * 
- * @return 返回实际传输的字节数,异常返回-1
+ * @return 返回实际传输的字节数,异常返回0
 */
 size_t serial_read(HANDLE hSerial, void* buffer,size_t bufferSize);
 

@@ -67,113 +67,113 @@ F10:1B 5B 32 31 7E
 F11:1B 5B 32 33 7E
 F12:1B 5B 32 34 7E
 */
-const struct key_value default_map[TTY_KEY_COUNT] = {
+const struct key_value tty_default_map[TTY_KEY_COUNT] = {
     [TTY_KEY_TAB] = {
 		.len = 1,
-		.value = {0x09}
+		.value = "\x09"
 	},
 	[TTY_KEY_ENTER] = {
 		.len = 1,
-		.value = {0x0D}
+		.value = "\x0D"
 	},
 	[TTY_KEY_ESC] = {
 		.len = 1,
-		.value = {0x1B}
+		.value = "\x1B"
 	},
 	[TTY_KEY_BACKSPACE] = {
 		.len = 1,
-		.value = {0x7F}
+		.value = "\x7F"
 	},
 
 	[TTY_KEY_UP] = {
 		.len = 3,
-		.value = {0x1B,0x5B,0x41}
+		.value = "\x1B\x5B\x41"
 	},
 	[TTY_KEY_DOWN] = {
 		.len = 3,
-		.value = {0x1B,0x5B,0x42}
+		.value = "\x1B\x5B\x42"
 	},
 	[TTY_KEY_RIGHT] = {
 		.len = 3,
-		.value = {0x1B,0x5B,0x43}
+		.value = "\x1B\x5B\x43"
 	},
 	[TTY_KEY_LEFT] = {
 		.len = 3,
-		.value = {0x1B,0x5B,0x44}
+		.value = "\x1B\x5B\x44"
 	},
 
 	[TTY_KEY_HOME] = {
 		.len = 4,
-		.value = {0x1B,0x5B,0x31,0x7E}
+		.value = "\x1B\x5B\x31\x7E"
 	},
 	[TTY_KEY_INSERT] = {
 		.len = 4,
-		.value = {0x1B,0x5B,0x32,0x7E}
+		.value = "\x1B\x5B\x32\x7E"
 	},
 	[TTY_KEY_DELETE] = {
 		.len = 4,
-		.value = {0x1B,0x5B,0x33,0x7E}
+		.value = "\x1B\x5B\x33\x7E"
 	},
 	[TTY_KEY_END] = {
 		.len = 4,
-		.value = {0x1B,0x5B,0x34,0x7E}
+		.value = "\x1B\x5B\x34\x7E"
 	},
 	[TTY_KEY_PAGEUP] = {
 		.len = 4,
-		.value = {0x1B,0x5B,0x35,0x7E}
+		.value = "\x1B\x5B\x35\x7E"
 	},
 	[TTY_KEY_PAGEDOWN] = {
 		.len = 4,
-		.value = {0x1B,0x5B,0x36,0x7E}
+		.value = "\x1B\x5B\x36\x7E"
 	},
 
 	[TTY_KEY_F1] = {
 		.len = 5,
-		.value = {0x1B,0x5B,0x31,0x31,0x7E}
+		.value = "\x1B\x5B\x31\x31\x7E"
 	},
 	[TTY_KEY_F2] = {
 		.len = 5,
-		.value = {0x1B,0x5B,0x31,0x32,0x7E}
+		.value = "\x1B\x5B\x31\x32\x7E"
 	},
 	[TTY_KEY_F3] = {
 		.len = 5,
-		.value = {0x1B,0x5B,0x31,0x33,0x7E}
+		.value = "\x1B\x5B\x31\x33\x7E"
 	},
 	[TTY_KEY_F4] = {
 		.len = 5,
-		.value = {0x1B,0x5B,0x31,0x34,0x7E}
+		.value = "\x1B\x5B\x31\x34\x7E"
 	},
 	[TTY_KEY_F5] = {
 		.len = 5,
-		.value = {0x1B,0x5B,0x31,0x35,0x7E}
+		.value = "\x1B\x5B\x31\x35\x7E"
 	},
 	[TTY_KEY_F6] = {
 		.len = 5,
-		.value = {0x1B,0x5B,0x31,0x37,0x7E}
+		.value = "\x1B\x5B\x31\x37\x7E"
 	},
 	[TTY_KEY_F7] = {
 		.len = 5,
-		.value = {0x1B,0x5B,0x31,0x38,0x7E}
+		.value = "\x1B\x5B\x31\x38\x7E"
 	},
 	[TTY_KEY_F8] = {
 		.len = 5,
-		.value = {0x1B,0x5B,0x31,0x39,0x7E}
+		.value = "\x1B\x5B\x31\x39\x7E"
 	},
 	[TTY_KEY_F9] = {
 		.len = 5,
-		.value = {0x1B,0x5B,0x32,0x30,0x7E}
+		.value = "\x1B\x5B\x32\x30\x7E"
 	},
 	[TTY_KEY_F10] = {
 		.len = 5,
-		.value = {0x1B,0x5B,0x32,0x31,0x7E}
+		.value = "\x1B\x5B\x32\x31\x7E"
 	},
 	[TTY_KEY_F11] = {
 		.len = 5,
-		.value = {0x1B,0x5B,0x32,0x33,0x7E}
+		.value = "\x1B\x5B\x32\x33\x7E"
 	},
 	[TTY_KEY_F12] = {
 		.len = 5,
-		.value = {0x1B,0x5B,0x32,0x34,0x7E}
+		.value = "\x1B\x5B\x32\x34\x7E"
 	},
 };
 
@@ -230,7 +230,7 @@ const struct key_value default_map[TTY_KEY_COUNT] = {
 void* get_key_map(const char* filename,struct key_value key_map[TTY_KEY_COUNT])
 {
     for(int i=0;i<TTY_KEY_COUNT;i++){
-        key_map[i] = default_map[i];
+        key_map[i] = tty_default_map[i];
     }
 	return NULL;
 }

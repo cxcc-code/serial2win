@@ -25,4 +25,8 @@ clean:
 	$(RM) $(OBJS)
 	$(RM) serial2win
 
+PHONY+=run
+run:
+	.\serial2win.exe --port=COM4 --baud=115200
+
 .PHONY:$(PHONY)

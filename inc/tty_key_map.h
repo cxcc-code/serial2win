@@ -40,6 +40,7 @@ struct key_value {
 };
 
 extern const char* const tty_key_name[TTY_KEY_COUNT];
+extern const struct key_value tty_default_map[TTY_KEY_COUNT];
 
 /*
 TAB:09

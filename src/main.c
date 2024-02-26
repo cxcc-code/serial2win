@@ -72,12 +72,64 @@ int utf8_to_gb2312(const char* utf8_string, char* gb2312_string, int gb2312_stri
     return gb2312_length - 1; // 返回转换后的字符串长度，不包括末尾的NULL字符
 }
 
+static HANDLE hCom = NULL;
+static HANDLE hConsole = NULL;
+static HANDLE hThread_read = NULL;
+static DWORD hThread_readId;
+static int running = 1;
+
+DWORD WINAPI tty_read(LPVOID lpParam) {
+    char buffer[1024];
+    size_t size;
+
+    if(hCom==NULL)
+        return 0;
+    char ch; // 不使用缓冲，每次读取一个字节
+    while (1)
+    {
+        size = serial_read(hCom,&ch,1);
+        if(size==0)
+            continue;
+        // buffer[size] = 0;
+        putchar(ch);
+    }
+    printf("tty_read end\n");
+    return 0;
+}
+
 int main(int argc,char*args[])
 {
     prase_args(&main_args,argc-1,args+1,&bool_flags,args_string,stdout);
 
+    int com_num = 0;
+    unsigned int baud = 0;
+    sscanf(args_string[ARGS_PORT],"COM%d",&com_num);
+    sscanf(args_string[ARGS_BAUD],"%u",&baud);
+
+    // 打开串口
+    hCom = serial_open(com_num, baud, 8, NOPARITY, ONESTOPBIT);
+    if(hCom==NULL){
+        printf("serial open faild: COM%d\n",com_num);
+        return 0;
+    }
+
+    // 创建读串口线程
+    hThread_read = CreateThread(
+        NULL,                   // 默认安全属性
+        0,                      // 默认线程堆栈大小
+        tty_read,               // 线程函数
+        NULL,                   // 传递给线程函数的参数
+        0,                      // 默认创建标志
+        &hThread_readId         // 用于接收线程 ID 的变量
+    );
+
+    if (hThread_read == NULL) {
+        printf("Thread creation failed\n");
+        return 0;
+    }
+
     //get console handler
-    HANDLE h = GetStdHandle(STD_INPUT_HANDLE);
+    HANDLE hConsole = GetStdHandle(STD_INPUT_HANDLE);
     //set console mode, enable window and mouse input
     DWORD cNumRead, fdwMode, i;
     fdwMode = ENABLE_EXTENDED_FLAGS | ENABLE_WINDOW_INPUT ;
@@ -87,97 +139,81 @@ int main(int argc,char*args[])
     KEY_EVENT_RECORD* key;
     MOUSE_EVENT_RECORD* mouse;
 
-    int flag = 0;
-    char buffer[5] = {0,0,0,0,0};
-
-    if (!SetConsoleMode(h, fdwMode))
+    if (!SetConsoleMode(hConsole, fdwMode))
         fprintf(stderr, "%s\n", "SetConsoleMode");
-    char buf[1024];
-    for (; ; )
+    
+    char buffer[4];
+    int wchar_flags = 0;
+    for ( ; ; )
     {
-        ReadConsoleInput(h, &irec, 1, &cc);
-        if (irec.EventType == KEY_EVENT)
-        {
-            key = (KEY_EVENT_RECORD*)&irec.Event;
-            if(key->wVirtualKeyCode==0){
-                
-                buffer[flag++]=key->uChar.AsciiChar;
-                // printf("falg:%d\tkey: 0x%02x\tcode: %d[ESC]\n",flag,key->uChar.AsciiChar,key->wVirtualKeyCode);
-                if(flag==3){
-                    buffer[2]=0;
-                    puts(buffer);
-                }
-                else if(flag==4){
-                    flag = 0;
-                }
+        ReadConsoleInput(hConsole, &irec, 1, &cc);
+        if (irec.EventType != KEY_EVENT)
+            continue;
+
+        key = (KEY_EVENT_RECORD*)&irec.Event;
+        // 处理中文输入
+        if(key->wVirtualKeyCode == 0){ 
+            buffer[wchar_flags++] = key->uChar.AsciiChar;
+            // printf("key: 0x%02x\tUnicodeChar: %c\tcode: %d\n",key->uChar.AsciiChar,key->uChar.UnicodeChar,key->wVirtualKeyCode);
+            if(wchar_flags==2){
+                buffer[2]=0;
+                buffer[3]=0;
+                puts(buffer);
+                wchar_flags = 0;
             }
-            else if (key->bKeyDown)
+            else if(wchar_flags==4){
+                wchar_flags = 0;
+            }
+        }
+        else if (key->bKeyDown)
+        {
+            int tty_key = -1;
+            // TTY 按键识别
+            switch (key->wVirtualKeyCode)
             {
-                int tty_key = -1;
-                switch (key->wVirtualKeyCode)
-                {
-                case VK_TAB:tty_key=TTY_KEY_TAB;break;
-                case VK_RETURN:tty_key=TTY_KEY_ENTER;break;
-                case VK_ESCAPE:tty_key=TTY_KEY_ESC;break;
-                case VK_BACK:tty_key=TTY_KEY_BACKSPACE;break;
-                
-                case VK_LEFT:tty_key=TTY_KEY_LEFT;break;
-                case VK_UP:tty_key=TTY_KEY_UP;break;
-                case VK_RIGHT:tty_key=TTY_KEY_RIGHT;break;
-                case VK_DOWN:tty_key=TTY_KEY_DOWN;break;
-                
-                case VK_PRIOR:tty_key=TTY_KEY_PAGEUP;break;
-                case VK_NEXT:tty_key=TTY_KEY_PAGEDOWN;break;
-                case VK_END:tty_key=TTY_KEY_END;break;
-                case VK_HOME:tty_key=TTY_KEY_HOME;break;
-                case VK_INSERT:tty_key=TTY_KEY_INSERT;break;
-                case VK_DELETE:tty_key=TTY_KEY_DELETE;break;
-                default:
-                    break;
-                }
-                if(key->wVirtualKeyCode>=VK_F1&&key->wVirtualKeyCode<=VK_F12)
-                    tty_key = TTY_KEY_F1 + (key->wVirtualKeyCode - VK_F1);
-                if(tty_key!=-1)
-                    printf("tty key:%s\n",tty_key_name[tty_key]);
-                else
-                    printf("key: %c\tcode: 0x%02x\n",key->uChar.AsciiChar,key->wVirtualKeyCode);
-                flag = 0;
-                if(tty_key==TTY_KEY_ESC)
-                    break;
+            case VK_TAB:tty_key=TTY_KEY_TAB;break;
+            case VK_RETURN:tty_key=TTY_KEY_ENTER;break;
+            case VK_ESCAPE:tty_key=TTY_KEY_ESC;break;
+            case VK_BACK:tty_key=TTY_KEY_BACKSPACE;break;
+            
+            case VK_LEFT:tty_key=TTY_KEY_LEFT;break;
+            case VK_UP:tty_key=TTY_KEY_UP;break;
+            case VK_RIGHT:tty_key=TTY_KEY_RIGHT;break;
+            case VK_DOWN:tty_key=TTY_KEY_DOWN;break;
+            
+            case VK_PRIOR:tty_key=TTY_KEY_PAGEUP;break;
+            case VK_NEXT:tty_key=TTY_KEY_PAGEDOWN;break;
+            case VK_END:tty_key=TTY_KEY_END;break;
+            case VK_HOME:tty_key=TTY_KEY_HOME;break;
+            case VK_INSERT:tty_key=TTY_KEY_INSERT;break;
+            case VK_DELETE:tty_key=TTY_KEY_DELETE;break;
+            default:
+                break;
+            }
+            if(key->wVirtualKeyCode>=VK_F1&&key->wVirtualKeyCode<=VK_F12)
+                tty_key = TTY_KEY_F1 + (key->wVirtualKeyCode - VK_F1);
+            
+            if(tty_key!=-1){
+                serial_write(hCom,tty_default_map[tty_key].value,tty_default_map[tty_key].len);
+                printf("[DEBUG]:%s\n",tty_key_name[tty_key]);
+            }
+            else if(key->uChar.AsciiChar>=' '&&key->uChar.AsciiChar<='~'){
+                char ch = key->uChar.AsciiChar;
+                serial_write(hCom,&ch,1);
             }
             else
-                flag = 0;
+                printf("key: %c\tcode: 0x%02x\tctrl:%d\n",key->uChar.AsciiChar,key->wVirtualKeyCode,key->dwControlKeyState);
+            // ctrl + q 退出
+            if(key->dwControlKeyState&LEFT_CTRL_PRESSED && key->wVirtualKeyCode=='Q')
+                break;
         }
     }
-    // char buffer_read[1024];
-    // size_t size;
-    // // 打开串口
-    // HANDLE hSerial = serial_open(5, 115200, 8, NOPARITY, ONESTOPBIT);
-    // if (hSerial != NULL) {
-    //     // 调用函数发送 "Hello, World!"
-    //     // send_hello_world(hSerial);
-    //     while (1)
-    //     {
-    //         size = serial_read(hSerial,buffer_read,1024);
-    //         buffer_read[size] = 0;
-    //         char gb2312_buffer[1024];
-    //         utf8_to_gb2312(buffer_read,gb2312_buffer,1024);
-    //         if(!strcmp(gb2312_buffer,"exit"))
-    //             break;
-    //         for(size_t i=0;i<size;i++){
-    //             putchar(gb2312_buffer[i]);
-    //             if(gb2312_buffer[i]=='\r')
-    //                 putchar('\n');
-    //         }
-    //         // printf("%s",buffer_read);
-    //     }
-        
 
-    //     // 关闭串口
-    //     serial_close(hSerial);
-    // }
-
-
-    
+    // 关闭串口
+    serial_close(hConsole);
+    // 终止读取进程
+    TerminateThread(hThread_read, 0);
+    CloseHandle(hCom);
+    CloseHandle(hThread_read);
     return 0;
 }
