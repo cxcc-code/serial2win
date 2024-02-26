@@ -47,11 +47,11 @@ HANDLE serial_open(
     }
 
     // 设置超时
-    timeouts.ReadIntervalTimeout = 50;
-    timeouts.ReadTotalTimeoutConstant = 50;
-    timeouts.ReadTotalTimeoutMultiplier = 10;
-    timeouts.WriteTotalTimeoutConstant = 5;
-    timeouts.WriteTotalTimeoutMultiplier = 10;
+    timeouts.ReadIntervalTimeout = 5;
+    timeouts.ReadTotalTimeoutConstant = 1;
+    timeouts.ReadTotalTimeoutMultiplier = 0;
+    timeouts.WriteTotalTimeoutConstant = 10;
+    timeouts.WriteTotalTimeoutMultiplier = 0;
     if (!SetCommTimeouts(hSerial, &timeouts)) {
         printf("Error: Unable to set serial port timeouts\n");
         CloseHandle(hSerial);
@@ -97,7 +97,7 @@ void serial_available(UINT32 available[8])
         test = QueryDosDevice(port_name, lpTargetPath, 512);
 
         if (test != 0){
-            printf("COM%d\n",i);
+            // printf("COM%d\n",i);
             available[i/32] |= (0x01<<(i%32));
         }
     }

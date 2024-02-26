@@ -4,6 +4,12 @@
 #include "serial.h"
 #include "tty_key_map.h"
 
+enum args_bool{
+    ARGS_LIST,
+
+    ARGS_BOOL_NUM
+};
+
 enum args_string{
     ARGS_PORT,
     ARGS_BAUD,
@@ -19,11 +25,17 @@ static const char* args_string_short[] = {
     [ARGS_PORT]="-p",
     [ARGS_BAUD]="-b"
 };
+static const char* args_bool_name[] = {
+    [ARGS_LIST]="--list",
+};
+static const char* args_bool_short[] = {
+    [ARGS_PORT]="-l",
+};
 
 static struct prase_handle main_args = {
-    .bool_max = 0,
-    .bool_name = NULL,
-    .bool_name_short = NULL,
+    .bool_max = ARGS_BOOL_NUM,
+    .bool_name = args_bool_name,
+    .bool_name_short = args_bool_short,
     .string_max = ARGS_STRING_NUM,
     .string_name = args_string_name,
     .string_name_short = args_string_short
@@ -87,11 +99,15 @@ DWORD WINAPI tty_read(LPVOID lpParam) {
     char ch; // 不使用缓冲，每次读取一个字节
     while (1)
     {
-        size = serial_read(hCom,&ch,1);
-        if(size==0)
+        size = serial_read(hCom,buffer,1024);
+        if(size==0){
+            Sleep(10);// 读取阻塞时无法写入，使用超时的方式，每次休眠的间隙可以进行写入
+            // printf("c");
             continue;
-        // buffer[size] = 0;
-        putchar(ch);
+        }
+        buffer[size] = 0;
+        for(size_t i=0;i<size;i++)
+            putchar(buffer[i]);
     }
     printf("tty_read end\n");
     return 0;
@@ -99,7 +115,18 @@ DWORD WINAPI tty_read(LPVOID lpParam) {
 
 int main(int argc,char*args[])
 {
+    UINT32 available[8];
     prase_args(&main_args,argc-1,args+1,&bool_flags,args_string,stdout);
+
+    if(FLAG_ENABLE(bool_flags,ARGS_LIST)){
+        serial_available(available);
+        int count = 0;
+        for(int i=0;i<255;i++){
+            if(SERIAL_TEST_AVAILABLE(available,i))
+                printf("%d:COM%d\n",count++,i);
+        }
+        return 0;
+    }
 
     int com_num = 0;
     unsigned int baud = 0;
@@ -195,16 +222,17 @@ int main(int argc,char*args[])
             
             if(tty_key!=-1){
                 serial_write(hCom,tty_default_map[tty_key].value,tty_default_map[tty_key].len);
-                printf("[DEBUG]:%s\n",tty_key_name[tty_key]);
+                // printf("[DEBUG]:%s\n",tty_key_name[tty_key]);
             }
             else if(key->uChar.AsciiChar>=' '&&key->uChar.AsciiChar<='~'){
                 char ch = key->uChar.AsciiChar;
                 serial_write(hCom,&ch,1);
             }
-            else
-                printf("key: %c\tcode: 0x%02x\tctrl:%d\n",key->uChar.AsciiChar,key->wVirtualKeyCode,key->dwControlKeyState);
-            // ctrl + q 退出
-            if(key->dwControlKeyState&LEFT_CTRL_PRESSED && key->wVirtualKeyCode=='Q')
+            else{
+                // printf("key: %c\tcode: 0x%02x\tctrl:%d\n",key->uChar.AsciiChar,key->wVirtualKeyCode,key->dwControlKeyState);
+            }
+            // alt + q 退出
+            if(key->dwControlKeyState&LEFT_ALT_PRESSED && key->wVirtualKeyCode=='Q')
                 break;
         }
     }
