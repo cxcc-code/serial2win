@@ -31,6 +31,33 @@ enum tty_key {
     TTY_KEY_F11,
     TTY_KEY_F12,
 
+    TTY_KEY_CTRL_A,
+    TTY_KEY_CTRL_B,
+    TTY_KEY_CTRL_C,
+    TTY_KEY_CTRL_D,
+    TTY_KEY_CTRL_E,
+    TTY_KEY_CTRL_F,
+    TTY_KEY_CTRL_G,
+    TTY_KEY_CTRL_H,
+    TTY_KEY_CTRL_I,
+    TTY_KEY_CTRL_J,
+    TTY_KEY_CTRL_K,
+    TTY_KEY_CTRL_L,
+    TTY_KEY_CTRL_M,
+    TTY_KEY_CTRL_N,
+    TTY_KEY_CTRL_O,
+    TTY_KEY_CTRL_P,
+    TTY_KEY_CTRL_Q,
+    TTY_KEY_CTRL_R,
+    TTY_KEY_CTRL_S,
+    TTY_KEY_CTRL_T,
+    TTY_KEY_CTRL_U,
+    TTY_KEY_CTRL_V,
+    TTY_KEY_CTRL_W,
+    TTY_KEY_CTRL_X,
+    TTY_KEY_CTRL_Y,
+    TTY_KEY_CTRL_Z,
+
     TTY_KEY_COUNT
 };
 

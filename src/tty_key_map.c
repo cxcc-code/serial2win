@@ -87,19 +87,19 @@ const struct key_value tty_default_map[TTY_KEY_COUNT] = {
 
 	[TTY_KEY_UP] = {
 		.len = 3,
-		.value = "\x1B\x5B\x41"
+		.value = "\033[A"
 	},
 	[TTY_KEY_DOWN] = {
 		.len = 3,
-		.value = "\x1B\x5B\x42"
+		.value = "\033[B"
 	},
 	[TTY_KEY_RIGHT] = {
 		.len = 3,
-		.value = "\x1B\x5B\x43"
+		.value = "\033[C"
 	},
 	[TTY_KEY_LEFT] = {
 		.len = 3,
-		.value = "\x1B\x5B\x44"
+		.value = "\033[D"
 	},
 
 	[TTY_KEY_HOME] = {
@@ -174,6 +174,111 @@ const struct key_value tty_default_map[TTY_KEY_COUNT] = {
 	[TTY_KEY_F12] = {
 		.len = 5,
 		.value = "\x1B\x5B\x32\x34\x7E"
+	},
+
+	[TTY_KEY_CTRL_A] = {
+		.len = 1,
+		.value = "\x01"
+	},
+    [TTY_KEY_CTRL_B] = {
+		.len = 1,
+		.value = "\x02"
+	},
+    [TTY_KEY_CTRL_C] = {
+		.len = 1,
+		.value = "\x03"
+	},
+    [TTY_KEY_CTRL_D] = {
+		.len = 1,
+		.value = "\x04"
+	},
+    [TTY_KEY_CTRL_E] = {
+		.len = 1,
+		.value = "\x05"
+	},
+    [TTY_KEY_CTRL_F] = {
+		.len = 1,
+		.value = "\x06"
+	},
+    [TTY_KEY_CTRL_G] = {
+		.len = 1,
+		.value = "\x07"
+	},
+    [TTY_KEY_CTRL_H] = {
+		.len = 1,
+		.value = "\x08"
+	},
+    [TTY_KEY_CTRL_I] = {
+		.len = 1,
+		.value = "\x09"
+	},
+    [TTY_KEY_CTRL_J] = {
+		.len = 1,
+		.value = "\x0A"
+	},
+    [TTY_KEY_CTRL_K] = {
+		.len = 1,
+		.value = "\x0B"
+	},
+    [TTY_KEY_CTRL_L] = {
+		.len = 1,
+		.value = "\x0C"
+	},
+    [TTY_KEY_CTRL_M] = {
+		.len = 1,
+		.value = "\x0D"
+	},
+    [TTY_KEY_CTRL_N] = {
+		.len = 1,
+		.value = "\x0E"
+	},
+    [TTY_KEY_CTRL_O] = {
+		.len = 1,
+		.value = "\x0F"
+	},
+    [TTY_KEY_CTRL_P] = {
+		.len = 1,
+		.value = "\x10"
+	},
+    [TTY_KEY_CTRL_Q] = {
+		.len = 1,
+		.value = "\x11"
+	},
+    [TTY_KEY_CTRL_R] = {
+		.len = 1,
+		.value = "\x12"
+	},
+    [TTY_KEY_CTRL_S] = {
+		.len = 1,
+		.value = "\x13"
+	},
+    [TTY_KEY_CTRL_T] = {
+		.len = 1,
+		.value = "\x14"
+	},
+    [TTY_KEY_CTRL_U] = {
+		.len = 1,
+		.value = "\x15"
+	},
+    [TTY_KEY_CTRL_V] = {
+		.len = 1,
+		.value = "\x16"
+	},
+    [TTY_KEY_CTRL_W] = {
+		.len = 1,
+		.value = "\x17"
+	},
+    [TTY_KEY_CTRL_X] = {
+		.len = 1,
+		.value = "\x18"
+	},
+    [TTY_KEY_CTRL_Y] = {
+		.len = 1,
+		.value = "\x19"
+	},
+    [TTY_KEY_CTRL_Z] = {
+		.len = 1,
+		.value = "\x1A"
 	},
 };
 

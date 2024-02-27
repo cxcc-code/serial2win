@@ -219,6 +219,16 @@ int main(int argc,char*args[])
             }
             if(key->wVirtualKeyCode>=VK_F1&&key->wVirtualKeyCode<=VK_F12)
                 tty_key = TTY_KEY_F1 + (key->wVirtualKeyCode - VK_F1);
+            if( key->dwControlKeyState&LEFT_CTRL_PRESSED &&
+                key->wVirtualKeyCode>='A' &&
+                key->wVirtualKeyCode<='Z') {
+                
+                tty_key = key->wVirtualKeyCode - 'A' + TTY_KEY_CTRL_A;
+            }
+
+            // alt + q 退出
+            if(key->dwControlKeyState&LEFT_ALT_PRESSED && key->wVirtualKeyCode=='Q')
+                break;
             
             if(tty_key!=-1){
                 serial_write(hCom,tty_default_map[tty_key].value,tty_default_map[tty_key].len);
@@ -231,9 +241,7 @@ int main(int argc,char*args[])
             else{
                 // printf("key: %c\tcode: 0x%02x\tctrl:%d\n",key->uChar.AsciiChar,key->wVirtualKeyCode,key->dwControlKeyState);
             }
-            // alt + q 退出
-            if(key->dwControlKeyState&LEFT_ALT_PRESSED && key->wVirtualKeyCode=='Q')
-                break;
+            
         }
     }
 
