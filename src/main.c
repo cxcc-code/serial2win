@@ -256,7 +256,6 @@ int main(int argc,char*args[])
     serial_close(hConsole);
     // 终止读取进程
     TerminateThread(hThread_read, 0);
-    CloseHandle(hCom);
     CloseHandle(hThread_read);
     key_map_free(tty_map);
     return 0;

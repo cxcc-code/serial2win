@@ -329,6 +329,33 @@ const struct key_value tty_default_map[TTY_KEY_COUNT] = {
 
 #define start_with(str,prefix)  (strstr(str,prefix)==str)
 
+/**
+ * @brief 从文件读取一个转义的按键名
+ * @param fp:读取字符的文件指针
+ * @param end:结束字符
+ * @param len:返回读取的长度
+ * 
+ * @return 返回识别到的按键,未识别到返回NULL
+ * 
+*/
+static const struct key_value* get_key_shift(FILE*fp,char end,int* len)
+{
+	int i,j;
+	char buffer[20];
+	for(i=0;i<20&&((buffer[i]=fgetc(fp))!=end)&&buffer[i]!=EOF;i++);
+	for(j=0;j<TTY_KEY_COUNT;j++)
+		if(start_with(buffer,tty_key_name[j]+8))
+			break;
+	if(j==TTY_KEY_COUNT)
+		return NULL;
+	
+	len && (*len = i);
+
+	return &tty_default_map[j];
+}
+
+#define data_in(data,first,end) (data>=first&&data<=end)
+
 int key_map_read(const char* filename,struct key_value key_map[TTY_KEY_COUNT])
 {
     char buffer[1024];
@@ -359,7 +386,7 @@ int key_map_read(const char* filename,struct key_value key_map[TTY_KEY_COUNT])
 			continue;
 		
 		for(int i=0;i<TTY_KEY_COUNT;i++){
-			if(strcmp(buffer+9,tty_key_name[i]+9))
+			if(strcmp(buffer+8,tty_key_name[i]+8))
 				continue;
 			cur = &key_map[i];
 			break;
@@ -371,7 +398,39 @@ int key_map_read(const char* filename,struct key_value key_map[TTY_KEY_COUNT])
 		for (len=0;(buffer[len]=fgetc(fp))!=EOF&&buffer[len]!='\n';len++){
 			if(buffer[len]!='\\')
 				continue;
-			
+			char ch = fgetc(fp);
+			const struct key_value* key;
+			switch (ch)
+			{
+			case '\\':
+				break;
+			case '{':
+				key = get_key_shift(fp,'}',NULL);
+				if(key==NULL){
+					len--;
+					break;
+				}
+				for(int i=0;i<key->len;i++)
+					buffer[len++] = key->value[i];
+				len--;
+				break;
+			case 'x':
+				buffer[len] = 0;
+				for(int i=0;i<2;i++){
+					buffer[len]*=16;
+					
+					ch = fgetc(fp);
+					if(data_in(ch,'0','9'))
+						buffer[len] += ch - '0';
+					else if(data_in(ch,'A','F'))
+						buffer[len] += ch - 'A' + 10;
+					else if(data_in(ch,'a','f'))
+						buffer[len] += ch - 'a' + 10;
+				}
+				break;
+			default:
+				break;
+			}
 		}
 		if(buffer[len]==EOF)
 			end_flag = 1;
@@ -391,5 +450,5 @@ int key_map_free(struct key_value key_map[TTY_KEY_COUNT])
 {
 	for(int i=0;i<TTY_KEY_COUNT;i++)
 		if(key_map[i].value!=tty_default_map[i].value)
-			free((char*)tty_default_map[i].value);
+			free((char*)key_map[i].value);
 }
