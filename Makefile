@@ -27,6 +27,6 @@ clean:
 
 PHONY+=run
 run:
-	.\serial2win.exe --port=COM4 --baud=115200
+	.\serial2win.exe --port=COM4 --baud=115200 -f key_map.ini
 
 .PHONY:$(PHONY)

@@ -118,6 +118,8 @@ F12:1B 5B 32 34 7E
  * 
 */
 
-void* get_key_map(const char* filename,struct key_value key_map[TTY_KEY_COUNT]);
+int key_map_read(const char* filename,struct key_value key_map[TTY_KEY_COUNT]);
+
+int key_map_free(struct key_value key_map[TTY_KEY_COUNT]);
 
 #endif //!__TTY_KEY_MAP_H__

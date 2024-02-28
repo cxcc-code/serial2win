@@ -2,71 +2,66 @@
 
 #include <stdlib.h>
 #include <stdio.h>
+#include <string.h>
 
 const char* const tty_key_name[TTY_KEY_COUNT] = {
 	"TTY_KEY_TAB",
-	"TTY_KEY_ENTER",
-	"TTY_KEY_ESC",
-	"TTY_KEY_BACKSPACE",
+    "TTY_KEY_ENTER",
+    "TTY_KEY_ESC",
+    "TTY_KEY_BACKSPACE",
 
-	"TTY_KEY_UP",
-	"TTY_KEY_DOWN",
-	"TTY_KEY_RIGHT",
-	"TTY_KEY_LEFT",
+    "TTY_KEY_UP",
+    "TTY_KEY_DOWN",
+    "TTY_KEY_RIGHT",
+    "TTY_KEY_LEFT",
 
-	"TTY_KEY_HOME",
-	"TTY_KEY_INSERT",
-	"TTY_KEY_DELETE",
-	"TTY_KEY_END",
-	"TTY_KEY_PAGEUP",
-	"TTY_KEY_PAGEDOWN",
-	"TTY_KEY_F1",
-	"TTY_KEY_F2",
-	"TTY_KEY_F3",
-	"TTY_KEY_F4",
-	"TTY_KEY_F5",
-	"TTY_KEY_F6",
-	"TTY_KEY_F7",
-	"TTY_KEY_F8",
-	"TTY_KEY_F9",
-	"TTY_KEY_F10",
-	"TTY_KEY_F11",
-	"TTY_KEY_F12",
+    "TTY_KEY_HOME",
+    "TTY_KEY_INSERT",
+    "TTY_KEY_DELETE",
+    "TTY_KEY_END",
+    "TTY_KEY_PAGEUP",
+    "TTY_KEY_PAGEDOWN",
+    "TTY_KEY_F1",
+    "TTY_KEY_F2",
+    "TTY_KEY_F3",
+    "TTY_KEY_F4",
+    "TTY_KEY_F5",
+    "TTY_KEY_F6",
+    "TTY_KEY_F7",
+    "TTY_KEY_F8",
+    "TTY_KEY_F9",
+    "TTY_KEY_F10",
+    "TTY_KEY_F11",
+    "TTY_KEY_F12",
+
+    "TTY_KEY_CTRL_A",
+    "TTY_KEY_CTRL_B",
+    "TTY_KEY_CTRL_C",
+    "TTY_KEY_CTRL_D",
+    "TTY_KEY_CTRL_E",
+    "TTY_KEY_CTRL_F",
+    "TTY_KEY_CTRL_G",
+    "TTY_KEY_CTRL_H",
+    "TTY_KEY_CTRL_I",
+    "TTY_KEY_CTRL_J",
+    "TTY_KEY_CTRL_K",
+    "TTY_KEY_CTRL_L",
+    "TTY_KEY_CTRL_M",
+    "TTY_KEY_CTRL_N",
+    "TTY_KEY_CTRL_O",
+    "TTY_KEY_CTRL_P",
+    "TTY_KEY_CTRL_Q",
+    "TTY_KEY_CTRL_R",
+    "TTY_KEY_CTRL_S",
+    "TTY_KEY_CTRL_T",
+    "TTY_KEY_CTRL_U",
+    "TTY_KEY_CTRL_V",
+    "TTY_KEY_CTRL_W",
+    "TTY_KEY_CTRL_X",
+    "TTY_KEY_CTRL_Y",
+    "TTY_KEY_CTRL_Z",
 };
 
-/*
-TAB:09
-Enter:0D
-ESC:1B
-backspace:7F
-
-上:1B 5B 41
-下:1B 5B 42
-右:1B 5B 43
-左:1B 5B 44
-
-home:       1B 5B 31 7E
-insert:     1B 5B 32 7E
-delete:     1B 5B 33 7E
-end:        1B 5B 34 7E
-pageup:     1B 5B 35 7E
-pagedown:   1B 5B 36 7E
-
-F1:1B 5B 31 31 7E
-F2:1B 5B 31 32 7E
-F3:1B 5B 31 33 7E
-F4:1B 5B 31 34 7E
-F5:1B 5B 31 35 7E
-
-F6 :1B 5B 31 37 7E
-F7 :1B 5B 31 38 7E
-F8 :1B 5B 31 39 7E
-F9 :1B 5B 32 30 7E
-F10:1B 5B 32 31 7E
-
-F11:1B 5B 32 33 7E
-F12:1B 5B 32 34 7E
-*/
 const struct key_value tty_default_map[TTY_KEY_COUNT] = {
     [TTY_KEY_TAB] = {
 		.len = 1,
@@ -104,76 +99,76 @@ const struct key_value tty_default_map[TTY_KEY_COUNT] = {
 
 	[TTY_KEY_HOME] = {
 		.len = 4,
-		.value = "\x1B\x5B\x31\x7E"
+		.value = "\033[1~"
 	},
 	[TTY_KEY_INSERT] = {
 		.len = 4,
-		.value = "\x1B\x5B\x32\x7E"
+		.value = "\033[2~"
 	},
 	[TTY_KEY_DELETE] = {
 		.len = 4,
-		.value = "\x1B\x5B\x33\x7E"
+		.value = "\033[3~"
 	},
 	[TTY_KEY_END] = {
 		.len = 4,
-		.value = "\x1B\x5B\x34\x7E"
+		.value = "\033[4~"
 	},
 	[TTY_KEY_PAGEUP] = {
 		.len = 4,
-		.value = "\x1B\x5B\x35\x7E"
+		.value = "\033[5~"
 	},
 	[TTY_KEY_PAGEDOWN] = {
 		.len = 4,
-		.value = "\x1B\x5B\x36\x7E"
+		.value = "\033[6~"
 	},
 
 	[TTY_KEY_F1] = {
 		.len = 5,
-		.value = "\x1B\x5B\x31\x31\x7E"
+		.value = "\033[11~"
 	},
 	[TTY_KEY_F2] = {
 		.len = 5,
-		.value = "\x1B\x5B\x31\x32\x7E"
+		.value = "\033[12~"
 	},
 	[TTY_KEY_F3] = {
 		.len = 5,
-		.value = "\x1B\x5B\x31\x33\x7E"
+		.value = "\033[13~"
 	},
 	[TTY_KEY_F4] = {
 		.len = 5,
-		.value = "\x1B\x5B\x31\x34\x7E"
+		.value = "\033[14~"
 	},
 	[TTY_KEY_F5] = {
 		.len = 5,
-		.value = "\x1B\x5B\x31\x35\x7E"
+		.value = "\033[15~"
 	},
 	[TTY_KEY_F6] = {
 		.len = 5,
-		.value = "\x1B\x5B\x31\x37\x7E"
+		.value = "\033[17~"
 	},
 	[TTY_KEY_F7] = {
 		.len = 5,
-		.value = "\x1B\x5B\x31\x38\x7E"
+		.value = "\033[18~"
 	},
 	[TTY_KEY_F8] = {
 		.len = 5,
-		.value = "\x1B\x5B\x31\x39\x7E"
+		.value = "\033[19~"
 	},
 	[TTY_KEY_F9] = {
 		.len = 5,
-		.value = "\x1B\x5B\x32\x30\x7E"
+		.value = "\033[20~"
 	},
 	[TTY_KEY_F10] = {
 		.len = 5,
-		.value = "\x1B\x5B\x32\x31\x7E"
+		.value = "\033[21~"
 	},
 	[TTY_KEY_F11] = {
 		.len = 5,
-		.value = "\x1B\x5B\x32\x33\x7E"
+		.value = "\033[23~"
 	},
 	[TTY_KEY_F12] = {
 		.len = 5,
-		.value = "\x1B\x5B\x32\x34\x7E"
+		.value = "\033[24~"
 	},
 
 	[TTY_KEY_CTRL_A] = {
@@ -332,10 +327,69 @@ const struct key_value tty_default_map[TTY_KEY_COUNT] = {
 //     return size;
 // }
 
-void* get_key_map(const char* filename,struct key_value key_map[TTY_KEY_COUNT])
+#define start_with(str,prefix)  (strstr(str,prefix)==str)
+
+int key_map_read(const char* filename,struct key_value key_map[TTY_KEY_COUNT])
 {
-    for(int i=0;i<TTY_KEY_COUNT;i++){
-        key_map[i] = tty_default_map[i];
-    }
-	return NULL;
+    char buffer[1024];
+	int len;
+	struct key_value* cur = NULL;
+	int end_flag = 0;
+
+	for(int i=0;i<TTY_KEY_COUNT;i++)
+		key_map[i] = tty_default_map[i];
+	
+	if(filename==NULL)
+		return 0;
+	FILE* fp = fopen(filename,"r");
+	if(fp==NULL)
+		return 0;
+	do
+	{
+		cur = NULL;
+
+		for (len=0;(buffer[len]=fgetc(fp))!=EOF&&buffer[len]!='='&&buffer[len]!='\n';len++);
+		if(buffer[len]==EOF)
+			break;
+		else if(buffer[len]=='\n')
+			continue;
+		
+		buffer[len] = '\0';
+		if(!start_with(buffer,"TTY_KEY_"))
+			continue;
+		
+		for(int i=0;i<TTY_KEY_COUNT;i++){
+			if(strcmp(buffer+9,tty_key_name[i]+9))
+				continue;
+			cur = &key_map[i];
+			break;
+		}
+
+		if(cur == NULL)
+			continue;
+		
+		for (len=0;(buffer[len]=fgetc(fp))!=EOF&&buffer[len]!='\n';len++){
+			if(buffer[len]!='\\')
+				continue;
+			
+		}
+		if(buffer[len]==EOF)
+			end_flag = 1;
+		
+		cur->len = len;
+		cur->value = (char*)malloc(len);
+		memcpy((char*)cur->value,buffer,len);
+
+	}while(!end_flag);
+	
+	fclose(fp);
+
+	return 0;
+}
+
+int key_map_free(struct key_value key_map[TTY_KEY_COUNT])
+{
+	for(int i=0;i<TTY_KEY_COUNT;i++)
+		if(key_map[i].value!=tty_default_map[i].value)
+			free((char*)tty_default_map[i].value);
 }

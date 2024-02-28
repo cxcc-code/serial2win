@@ -13,17 +13,20 @@ enum args_bool{
 enum args_string{
     ARGS_PORT,
     ARGS_BAUD,
+    ARGS_FILE,
 
     ARGS_STRING_NUM
 };
 
 static const char* args_string_name[] = {
     [ARGS_PORT]="--port",
-    [ARGS_BAUD]="--baud"
+    [ARGS_BAUD]="--baud",
+    [ARGS_FILE]="--file"
 };
 static const char* args_string_short[] = {
     [ARGS_PORT]="-p",
-    [ARGS_BAUD]="-b"
+    [ARGS_BAUD]="-b",
+    [ARGS_FILE]="-f"
 };
 static const char* args_bool_name[] = {
     [ARGS_LIST]="--list",
@@ -116,6 +119,8 @@ DWORD WINAPI tty_read(LPVOID lpParam) {
 int main(int argc,char*args[])
 {
     UINT32 available[8];
+    struct key_value tty_map[TTY_KEY_COUNT];
+
     prase_args(&main_args,argc-1,args+1,&bool_flags,args_string,stdout);
 
     if(FLAG_ENABLE(bool_flags,ARGS_LIST)){
@@ -127,6 +132,8 @@ int main(int argc,char*args[])
         }
         return 0;
     }
+    
+    key_map_read(args_string[ARGS_FILE],tty_map);
 
     int com_num = 0;
     unsigned int baud = 0;
@@ -231,7 +238,7 @@ int main(int argc,char*args[])
                 break;
             
             if(tty_key!=-1){
-                serial_write(hCom,tty_default_map[tty_key].value,tty_default_map[tty_key].len);
+                serial_write(hCom,tty_map[tty_key].value,tty_map[tty_key].len);
                 // printf("[DEBUG]:%s\n",tty_key_name[tty_key]);
             }
             else if(key->uChar.AsciiChar>=' '&&key->uChar.AsciiChar<='~'){
@@ -251,5 +258,6 @@ int main(int argc,char*args[])
     TerminateThread(hThread_read, 0);
     CloseHandle(hCom);
     CloseHandle(hThread_read);
+    key_map_free(tty_map);
     return 0;
 }
