@@ -140,8 +140,6 @@ int select_com()
             else
                 printf("%d. COM%d",count,i);
 
-            puts((count==ret)?" *":"");
-
             count++;
         }
         if(count==0)
@@ -306,6 +304,17 @@ int main(int argc,char*args[])
             // alt + q 退出
             if(key->dwControlKeyState&LEFT_ALT_PRESSED && key->wVirtualKeyCode=='Q')
                 break;
+            // alt + q 退出
+            if(key->dwControlKeyState&LEFT_ALT_PRESSED && key->wVirtualKeyCode=='W'){
+                char buffer[1024];
+                if(args_string[ARGS_FILE]==NULL)
+                    continue;
+                snprintf(buffer,1024,"notepad.exe %s",args_string[ARGS_FILE]);
+                system(buffer);
+                key_map_free(tty_map);
+                key_map_read(args_string[ARGS_FILE],tty_map);
+                continue;
+            }
             
             if(tty_key!=-1){
                 serial_write(hCom,tty_map[tty_key].value,tty_map[tty_key].len);
