@@ -47,14 +47,18 @@ static struct prase_handle main_args = {
 static unsigned int bool_flags;
 static const char* args_string[ARGS_STRING_NUM];
 
-void send_hello_world(HANDLE hSerial) {
-    const char* message = "Hello, World!";
-    while (1) {
-        serial_write(hSerial, message, strlen(message));
-        printf("Sent: %s\n", message);
-        Sleep(1000); // 每隔1秒发送一次
-    }
-}
+static HANDLE hCom = NULL;
+static HANDLE hThread_read = NULL;
+static DWORD hThread_readId;
+static int running = 1;
+
+static HANDLE hConsole = NULL;
+//set console mode, enable window and mouse input
+static DWORD cNumRead, fdwMode, i;
+//get input
+static DWORD cc;
+static INPUT_RECORD irec;
+static KEY_EVENT_RECORD* key;
 
 int utf8_to_gb2312(const char* utf8_string, char* gb2312_string, int gb2312_string_size) {
     // 将UTF-8编码的字符串转换为宽字符
@@ -87,12 +91,6 @@ int utf8_to_gb2312(const char* utf8_string, char* gb2312_string, int gb2312_stri
     return gb2312_length - 1; // 返回转换后的字符串长度，不包括末尾的NULL字符
 }
 
-static HANDLE hCom = NULL;
-static HANDLE hConsole = NULL;
-static HANDLE hThread_read = NULL;
-static DWORD hThread_readId;
-static int running = 1;
-
 DWORD WINAPI tty_read(LPVOID lpParam) {
     char buffer[1024];
     size_t size;
@@ -116,12 +114,85 @@ DWORD WINAPI tty_read(LPVOID lpParam) {
     return 0;
 }
 
+/**
+ * 
+*/
+int select_com()
+{
+    DWORD cc;
+    INPUT_RECORD irec;
+    KEY_EVENT_RECORD* key;
+    int ret = -1,cur = 0;
+    int count = 0;
+
+    UINT32 available[8];
+    serial_available(available);
+
+    for(;;)
+    {
+        count = 0;
+        printf("\033c");
+        for(int i=0;i<255;i++){
+            if(!SERIAL_TEST_AVAILABLE(available,i))
+                continue;
+            if(count==cur)
+                printf("\033[7m%d. COM%d\033[27m",count,i);
+            else
+                printf("%d. COM%d",count,i);
+
+            puts((count==ret)?" *":"");
+
+            count++;
+        }
+        if(count==0)
+            return -1;
+        FlushConsoleInputBuffer(hConsole);
+        ReadConsoleInput(hConsole, &irec, 1, &cc);
+        if (irec.EventType != KEY_EVENT)
+            continue;
+        key = (KEY_EVENT_RECORD*)&irec.Event;
+
+        switch (key->wVirtualKeyCode)
+        {
+        case VK_RETURN:
+            ret = cur;
+        case VK_ESCAPE:
+            goto end;
+        case VK_UP:
+            cur = (cur>0)?cur-1:cur;
+            break;
+        case VK_DOWN:
+            cur = (cur<count-1)?cur+1:cur;
+            break;
+        default:
+            break;
+        }
+    }
+end:
+    count = 0;
+    for(int i=0;i<255;i++){
+        if(!SERIAL_TEST_AVAILABLE(available,i))
+            continue;
+        if(count==cur)
+            return i;
+        count++;
+    }
+    return -1;
+}
+
 int main(int argc,char*args[])
 {
     UINT32 available[8];
     struct key_value tty_map[TTY_KEY_COUNT];
 
     prase_args(&main_args,argc-1,args+1,&bool_flags,args_string,stdout);
+
+    //get console handler
+    hConsole = GetStdHandle(STD_INPUT_HANDLE);
+    fdwMode = ENABLE_EXTENDED_FLAGS | ENABLE_WINDOW_INPUT ;
+    
+    if (!SetConsoleMode(hConsole, fdwMode))
+        fprintf(stderr, "%s\n", "SetConsoleMode");
 
     if(FLAG_ENABLE(bool_flags,ARGS_LIST)){
         serial_available(available);
@@ -135,16 +206,29 @@ int main(int argc,char*args[])
     
     key_map_read(args_string[ARGS_FILE],tty_map);
 
-    int com_num = 0;
+    int com_num = -1;
     unsigned int baud = 0;
-    sscanf(args_string[ARGS_PORT],"COM%d",&com_num);
+    if(args_string[ARGS_PORT]!=NULL)
+        sscanf(args_string[ARGS_PORT],"COM%d",&com_num);
+    else 
+        com_num = select_com();
+    
     sscanf(args_string[ARGS_BAUD],"%u",&baud);
 
     // 打开串口
-    hCom = serial_open(com_num, baud, 8, NOPARITY, ONESTOPBIT);
-    if(hCom==NULL){
+    while(1){
+        hCom = serial_open(com_num, baud, 8, NOPARITY, ONESTOPBIT);
+        if(hCom!=NULL){
+            system("cls");
+            break;
+        }
         printf("serial open faild: COM%d\n",com_num);
-        return 0;
+        system("pause");
+        com_num = select_com(available);
+        if(com_num==-1) {
+            CloseHandle(hConsole);
+            return 0;
+        }
     }
 
     // 创建读串口线程
@@ -161,20 +245,6 @@ int main(int argc,char*args[])
         printf("Thread creation failed\n");
         return 0;
     }
-
-    //get console handler
-    HANDLE hConsole = GetStdHandle(STD_INPUT_HANDLE);
-    //set console mode, enable window and mouse input
-    DWORD cNumRead, fdwMode, i;
-    fdwMode = ENABLE_EXTENDED_FLAGS | ENABLE_WINDOW_INPUT ;
-    //get input
-    DWORD cc;
-    INPUT_RECORD irec;
-    KEY_EVENT_RECORD* key;
-    MOUSE_EVENT_RECORD* mouse;
-
-    if (!SetConsoleMode(hConsole, fdwMode))
-        fprintf(stderr, "%s\n", "SetConsoleMode");
     
     char buffer[4];
     int wchar_flags = 0;

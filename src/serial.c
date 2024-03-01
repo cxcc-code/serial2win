@@ -25,7 +25,7 @@ HANDLE serial_open(
         NULL//用于复制文件句柄,通常这个参数设置为NULL，为空表示不使用模板
         );
     if (hSerial == INVALID_HANDLE_VALUE) {
-        printf("Error: Unable to open COM port\n");
+        // printf("Error: Unable to open COM port\n");
         return NULL;
     }
 
